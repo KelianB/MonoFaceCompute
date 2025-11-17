@@ -13,6 +13,8 @@ Computations include:
 - Normals estimation
     - DSINE: https://github.com/baegwangbin/DSINE
     - omnidata: https://github.com/EPFL-VILAB/omnidata
+    - StableNormal: https://github.com/Stable-X/StableNormal
+    - Sapiens: https://github.com/facebookresearch/sapiens.git
 
 Pull requests for other computations are welcome!
 
@@ -31,7 +33,7 @@ This was tested on Ubuntu 22.04 with a NVIDIA A5000 GPU.
 
 All computations are aggregated in a single entry point. Run the following command to process one dataset:
 ```bash
-python process.py --datasets datasets/example.yaml
+python process.py --dataset datasets/example.yaml
 ```
 
 By default, the script will run the following steps:
@@ -58,8 +60,10 @@ Supported fields of the dataset configuration files:
 | smooth_tracking | Apply a low-pass filter to the optimized pose and expression values. |
 | tracker | What face tracker to use (DECA / EMOCA / FaceReconstruction / SMIRK). |
 | shape_tracker | Optionally specify a different face tracker for recovering shape parameters (DECA / EMOCA / FaceReconstruction / SMIRK). |
-| steps | What steps to launch (extract, crop, matte, segment, landmarks, track, optimize)
+| steps | What steps to launch (extract, crop, matte, segment, landmarks, track, optimize, normals)
 | sequences | Array of:<ul><li>source: input video file, relative to *base_dir* (e.g. "1.mp4")</li><li>crop_mode: fixed / constant / smooth</li><li>face_selection_strategy: strategy to use for selecting a detection when there are multiple (max_confidence / leftmost / rightmost) (only used if crop_mode=constant or crop_mode=smooth)</li><li>fixed_crop: [center_x, center_y, size] (only used if crop_mode=fixed)</li></ol>
+| normals_estimator | What method to use for predicting normal maps (omnidata / dsine / stablenormal / sapiens). Note that some additional setup is needed for some (e.g. [setup_sapiens.sh](./setup_sapiens.sh)).
+
 
 ## License
 

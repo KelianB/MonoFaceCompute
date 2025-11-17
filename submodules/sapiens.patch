@@ -1,0 +1,21 @@
+diff --git a/lite/demo/vis_normal.py b/lite/demo/vis_normal.py
+index f4cf0c3..5e0bdd9 100644
+--- a/lite/demo/vis_normal.py
++++ b/lite/demo/vis_normal.py
+@@ -81,13 +81,14 @@ def img_save_and_viz(image, result, output_path, seg_dir):
+         mask = np.ones_like(normal_map)
+     normal_map_norm = np.linalg.norm(normal_map, axis=-1, keepdims=True)
+     normal_map_normalized = normal_map / (normal_map_norm + 1e-5)  # Add a small e
+-    np.save(output_file, normal_map_normalized)
++    # np.save(output_file, normal_map_normalized)
+ 
+     normal_map_normalized[mask == 0] = -1  ## visualize background (nan) as black
+     normal_map = ((normal_map_normalized + 1) / 2 * 255).astype(np.uint8)
+     normal_map = normal_map[:, :, ::-1]
+ 
+-    vis_image = np.concatenate([image, normal_map], axis=1)
++    # vis_image = np.concatenate([image, normal_map], axis=1)
++    vis_image = normal_map
+     cv2.imwrite(output_path, vis_image)
+ 
+ def load_model(checkpoint, use_torchscript=False):

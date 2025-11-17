@@ -19,15 +19,15 @@ PATH_INFERNO = PATH_ROOT / "submodules/INFERNO"
 PATH_SMIRK = PATH_ROOT / "submodules/SMIRK"
 PATH_OMNIDATA = PATH_ROOT / "submodules/omnidata"
 PATH_DSINE = PATH_ROOT / "submodules/DSINE/projects/dsine"
-
-NORMALS_ESTIMATOR = "dsine" # omnidata | dsine
+PATH_SAPIENS = PATH_ROOT / "submodules/sapiens/lite/demo"
 
 def title(s):
     return "\n" + "#"*50 + f"\n{s}\n" + "#"*50
 
 def run(sequences: Dict, shape_sequence: str, output_dir: str, resize: int,
                crop_scale: float, crop_mode: str, smooth_tracking: bool,
-               tracker: str, shape_tracker: str, steps: List[str]):
+               tracker: str, shape_tracker: str, steps: List[str],
+               normals_estimator: str):
 
     setup_logging()
 
@@ -54,7 +54,7 @@ def run(sequences: Dict, shape_sequence: str, output_dir: str, resize: int,
         mask_patterns[seq_name] = seq_dir / "mask" / "%d.png"
         deca_dirs[seq_name] = seq_dir / "deca"
         segmentation_dirs[seq_name] = seq_dir / "semantic"
-        normals_dirs[seq_name] = seq_dir / "normals"
+        normals_dirs[seq_name] = seq_dir / f"normals_{normals_estimator}"
 
     start_time = time.time()
 
@@ -110,20 +110,25 @@ def run(sequences: Dict, shape_sequence: str, output_dir: str, resize: int,
 
     ############################################################
     if "normals" in steps:
-        assert NORMALS_ESTIMATOR in ["omnidata", "dsine"]
+        assert normals_estimator in ["omnidata", "dsine", "stablenormal", "sapiens"]
         
         logging.info(title("Normals estimation"))
         cmds = []
         for seq_name, seq in sequences.items():
             normals_dirs[seq_name].mkdir(exist_ok=True, parents=True)
     
-            if NORMALS_ESTIMATOR == "omnidata":
+            if normals_estimator == "omnidata":
                 cmd = f"python estimate_normals.py --task normal --img_path '{crop_patterns[seq_name].parent}' --output_path '{normals_dirs[seq_name]}'"
-            elif NORMALS_ESTIMATOR == "dsine":
+            elif normals_estimator == "dsine":
                 cmd = f"python test_minimal_custom.py ./experiments/exp001_cvpr2024/dsine.txt --input_dir '{crop_patterns[seq_name].parent}' --output_dir '{normals_dirs[seq_name]}'"
+            elif normals_estimator == "stablenormal":
+                cmd = f"conda run -n StableNormal --no-capture-output python compute/stablenormal.py --images '{crop_patterns[seq_name].parent / '*'}' --output_dir '{normals_dirs[seq_name]}'"
+            elif normals_estimator == "sapiens":
+                checkpoint = "../../sapiens_1b_normal_render_people_epoch_115_torchscript.pt2"
+                cmd = f"conda run -n sapiens_lite --no-capture-output python vis_normal.py {checkpoint} --input '{crop_patterns[seq_name].parent}' --output_root '{normals_dirs[seq_name]}' --batch_size {8} --subsample {normals_subsample}"
 
             cmds.append(cmd)
-        run_cmds(cmds, cwd={"omnidata": PATH_OMNIDATA, "dsine": PATH_DSINE}[NORMALS_ESTIMATOR])
+        run_cmds(cmds, cwd={"omnidata": PATH_OMNIDATA, "dsine": PATH_DSINE, "stablenormal": PATH_ROOT, "sapiens": PATH_SAPIENS}[normals_estimator])
 
     ############################################################
     if "landmarks" in steps:
@@ -241,4 +246,7 @@ if __name__ == "__main__":
         for seq in cfg.sequences.values():
             seq.source = os.path.join(cfg.base_dir, seq.source)
 
-    run(cfg.sequences, cfg.shape_sequence, cfg.output_dir, cfg.resize, cfg.crop_scale, cfg.crop_mode, cfg.smooth_tracking, cfg.tracker, cfg.shape_tracker, cfg.steps)
+    if "normals_estimator" not in cfg:
+        cfg.normals_estimator = "dsine"
+
+    run(cfg.sequences, cfg.shape_sequence, cfg.output_dir, cfg.resize, cfg.crop_scale, cfg.crop_mode, cfg.smooth_tracking, cfg.tracker, cfg.shape_tracker, cfg.steps, cfg.normals_estimator)

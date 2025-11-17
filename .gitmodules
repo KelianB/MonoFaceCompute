@@ -16,3 +16,6 @@
 [submodule "submodules/DSINE"]
 	path = submodules/DSINE
 	url = https://github.com/baegwangbin/DSINE.git
+[submodule "submodules/sapiens"]
+	path = submodules/sapiens
+	url = https://github.com/facebookresearch/sapiens.git
