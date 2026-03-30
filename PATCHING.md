@@ -14,5 +14,6 @@ This is a memo for updating the submodules patch files.
 (cd ./submodules/DSINE && git --no-pager diff --no-color --staged > ../DSINE.patch)
 (cd ./submodules/omnidata && git --no-pager diff --no-color --staged > ../omnidata.patch)
 (cd ./submodules/sapiens && git --no-pager diff --no-color --staged > ../sapiens.patch)
+(cd ./submodules/IntrinsicAnything && git --no-pager diff --no-color --staged > ../IntrinsicAnything.patch)
 ```
  

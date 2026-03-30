@@ -12,3 +12,5 @@ echo "Downloading pre-trained SMIRK model"
 # (cd submodules/DSINE && mkdir -p ./projects/dsine/checkpoints/exp001_cvpr2024 && gdown 1Wyiei4a-lVM6izjTNoBLIC5-Rcy4jnaC -O ./projects/dsine/checkpoints/exp001_cvpr2024/dsine.pt)
 echo "Downloading pre-trained Sapiens normal estimation model"
 (cd submodules/sapiens && wget https://huggingface.co/facebook/sapiens-normal-1b-torchscript/resolve/main/sapiens_1b_normal_render_people_epoch_115_torchscript.pt2)
+echo "Downloading pre-trained IntrinsicAnything albedo model"
+(cd submodules/IntrinsicAnything && mkdir -p ./weights/albedo/checkpoints && wget https://huggingface.co/LittleFrog/IntrinsicAnything/resolve/main/albedo/checkpoints/last.ckpt?download=true -O ./weights/albedo/checkpoints/last.ckpt)

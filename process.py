@@ -20,6 +20,7 @@ PATH_SMIRK = PATH_ROOT / "submodules/SMIRK"
 PATH_OMNIDATA = PATH_ROOT / "submodules/omnidata"
 PATH_DSINE = PATH_ROOT / "submodules/DSINE/projects/dsine"
 PATH_SAPIENS = PATH_ROOT / "submodules/sapiens/lite/demo"
+PATH_INTRINSIC_ANYTHING = PATH_ROOT / "submodules/IntrinsicAnything"
 
 def title(s):
     return "\n" + "#"*50 + f"\n{s}\n" + "#"*50
@@ -27,7 +28,8 @@ def title(s):
 def run(sequences: Dict, shape_sequence: str, output_dir: str, resize: int,
                crop_scale: float, crop_mode: str, smooth_tracking: bool,
                tracker: str, shape_tracker: str, steps: List[str],
-               normals_estimator: str, normals_subsample: int):
+               normals_estimator: str, normals_subsample: int,
+               albedo_estimator: str, albedo_subsample: int):
 
     setup_logging()
 
@@ -46,6 +48,7 @@ def run(sequences: Dict, shape_sequence: str, output_dir: str, resize: int,
     deca_dirs: Dict[str, Path] = {}
     segmentation_dirs: Dict[str, Path] = {}
     normals_dirs: Dict[str, Path] = {}
+    albedo_dirs: Dict[str, Path] = {}
     for seq_name in sequences:
         seq_dir = output_dir / str(seq_name)
         seq_dirs[seq_name] = seq_dir
@@ -55,6 +58,7 @@ def run(sequences: Dict, shape_sequence: str, output_dir: str, resize: int,
         deca_dirs[seq_name] = seq_dir / "deca"
         segmentation_dirs[seq_name] = seq_dir / "semantic"
         normals_dirs[seq_name] = seq_dir / f"normals_{normals_estimator}"
+        albedo_dirs[seq_name] = seq_dir / f"albedo_{albedo_estimator}"
 
     start_time = time.time()
 
@@ -131,6 +135,21 @@ def run(sequences: Dict, shape_sequence: str, output_dir: str, resize: int,
 
             cmds.append(cmd)
         run_cmds(cmds, cwd={"omnidata": PATH_OMNIDATA, "dsine": PATH_DSINE, "stablenormal": PATH_ROOT, "sapiens": PATH_SAPIENS}[normals_estimator])
+
+    ############################################################
+    if "albedo" in steps:
+        assert albedo_estimator in ["intrinsic_anything"]
+
+        logging.info(title("Albedo estimation"))
+        cmds = []
+        for seq_name, seq in sequences.items():
+            albedo_dirs[seq_name].mkdir(exist_ok=True, parents=True)
+    
+            if albedo_estimator == "intrinsic_anything":
+                cmd = f"conda run -n intrinsic_anything --no-capture-output python inference.py --model_dir weights/albedo --input_dir '{crop_patterns[seq_name].parent}' --output_dir '{albedo_dirs[seq_name]}' --ddim 100 --batch_size 8 --image_interval {albedo_subsample}"
+
+            cmds.append(cmd)
+        run_cmds(cmds, cwd={"intrinsic_anything": PATH_INTRINSIC_ANYTHING}[albedo_estimator])
 
     ############################################################
     if "landmarks" in steps:
@@ -253,5 +272,10 @@ if __name__ == "__main__":
     if "normals_subsample" not in cfg:
         cfg.normals_subsample = 1
 
+    if "albedo_estimator" not in cfg:
+        cfg.albedo_estimator = "intrinsic_anything"
+    if "albedo_subsample" not in cfg:
+        cfg.albedo_subsample = 1
+
     run(cfg.sequences, cfg.shape_sequence, cfg.output_dir, cfg.resize, cfg.crop_scale, cfg.crop_mode, cfg.smooth_tracking, cfg.tracker, cfg.shape_tracker, cfg.steps,
-        cfg.normals_estimator, cfg.normals_subsample)
+        cfg.normals_estimator, cfg.normals_subsample, cfg.albedo_estimator, cfg.albedo_subsample)

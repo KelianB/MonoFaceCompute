@@ -19,3 +19,6 @@
 [submodule "submodules/sapiens"]
 	path = submodules/sapiens
 	url = https://github.com/facebookresearch/sapiens.git
+[submodule "submodules/IntrinsicAnything"]
+	path = submodules/IntrinsicAnything
+	url = https://github.com/zju3dv/IntrinsicAnything.git
