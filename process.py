@@ -27,7 +27,7 @@ def title(s):
 def run(sequences: Dict, shape_sequence: str, output_dir: str, resize: int,
                crop_scale: float, crop_mode: str, smooth_tracking: bool,
                tracker: str, shape_tracker: str, steps: List[str],
-               normals_estimator: str):
+               normals_estimator: str, normals_subsample: int):
 
     setup_logging()
 
@@ -111,7 +111,9 @@ def run(sequences: Dict, shape_sequence: str, output_dir: str, resize: int,
     ############################################################
     if "normals" in steps:
         assert normals_estimator in ["omnidata", "dsine", "stablenormal", "sapiens"]
-        
+        if normals_subsample != 1 and normals_estimator not in ["sapiens"]:
+            raise NotImplementedError(f"Subsampling is only implemented for normals estimator 'sapiens' for now, but got '{normals_estimator}'")
+
         logging.info(title("Normals estimation"))
         cmds = []
         for seq_name, seq in sequences.items():
@@ -248,5 +250,8 @@ if __name__ == "__main__":
 
     if "normals_estimator" not in cfg:
         cfg.normals_estimator = "dsine"
+    if "normals_subsample" not in cfg:
+        cfg.normals_subsample = 1
 
-    run(cfg.sequences, cfg.shape_sequence, cfg.output_dir, cfg.resize, cfg.crop_scale, cfg.crop_mode, cfg.smooth_tracking, cfg.tracker, cfg.shape_tracker, cfg.steps, cfg.normals_estimator)
+    run(cfg.sequences, cfg.shape_sequence, cfg.output_dir, cfg.resize, cfg.crop_scale, cfg.crop_mode, cfg.smooth_tracking, cfg.tracker, cfg.shape_tracker, cfg.steps,
+        cfg.normals_estimator, cfg.normals_subsample)

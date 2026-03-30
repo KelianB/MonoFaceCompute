@@ -62,8 +62,8 @@ Supported fields of the dataset configuration files:
 | shape_tracker | Optionally specify a different face tracker for recovering shape parameters (DECA / EMOCA / FaceReconstruction / SMIRK). |
 | steps | What steps to launch (extract, crop, matte, segment, landmarks, track, optimize, normals)
 | sequences | Array of:<ul><li>source: input video file, relative to *base_dir* (e.g. "1.mp4")</li><li>crop_mode: fixed / constant / smooth</li><li>face_selection_strategy: strategy to use for selecting a detection when there are multiple (max_confidence / leftmost / rightmost) (only used if crop_mode=constant or crop_mode=smooth)</li><li>fixed_crop: [center_x, center_y, size] (only used if crop_mode=fixed)</li></ol>
-| normals_estimator | What method to use for predicting normal maps (omnidata / dsine / stablenormal / sapiens). Note that some additional setup is needed for some (e.g. [setup_sapiens.sh](./setup_sapiens.sh)).
-
+| normals_estimator | What method to use for predicting normal maps (supported: omnidata / dsine / stablenormal / sapiens). Note that some additional setup is needed for some (e.g. [setup_sapiens.sh](./setup_sapiens.sh)).
+| normals_subsample | How much to subsample the input video for predicting normal maps (e.g. 2 means compute normals for every other frame). Default: 1. Not supported for all normals estimators.
 
 ## License
 
