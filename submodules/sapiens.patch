@@ -1,8 +1,16 @@
 diff --git a/lite/demo/vis_normal.py b/lite/demo/vis_normal.py
-index f4cf0c3..5e0bdd9 100644
+index f4cf0c3..720810d 100644
 --- a/lite/demo/vis_normal.py
 +++ b/lite/demo/vis_normal.py
-@@ -81,13 +81,14 @@ def img_save_and_viz(image, result, output_path, seg_dir):
+@@ -19,6 +19,7 @@ import torch.nn.functional as F
+ import torchvision
+ from adhoc_image_dataset import AdhocImageDataset
+ from tqdm import tqdm
++from natsort import natsorted
+ 
+ from worker_pool import WorkerPool
+ 
+@@ -81,13 +82,14 @@ def img_save_and_viz(image, result, output_path, seg_dir):
          mask = np.ones_like(normal_map)
      normal_map_norm = np.linalg.norm(normal_map, axis=-1, keepdims=True)
      normal_map_normalized = normal_map / (normal_map_norm + 1e-5)  # Add a small e
@@ -19,3 +27,20 @@ index f4cf0c3..5e0bdd9 100644
      cv2.imwrite(output_path, vis_image)
  
  def load_model(checkpoint, use_torchscript=False):
+@@ -122,6 +124,7 @@ def main():
+     parser.add_argument(
+         "--fp16", action="store_true", default=False, help="Model inference dtype"
+     )
++    parser.add_argument("--subsample", type=int, default=1, help="Subsample factor for input images")
+     args = parser.parse_args()
+ 
+     if len(args.shape) == 1:
+@@ -181,6 +184,8 @@ def main():
+     global BATCH_SIZE
+     BATCH_SIZE = args.batch_size
+ 
++    image_names = natsorted(image_names)[::args.subsample]
++
+     n_batches = (len(image_names) + args.batch_size - 1) // args.batch_size
+ 
+     inference_dataset = AdhocImageDataset(
