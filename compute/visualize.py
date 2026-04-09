@@ -29,7 +29,7 @@ if __name__ == "__main__":
     device = torch.device(0)
 
     fps = 24
-    size = 512 # TODO auto-detect
+    size = 512
 
     # Load any version of DECA, this is just to have access to the rendering
     model_path = Path(inferno.__file__).parents[1] / "assets/EMOCA/models/DECA"
@@ -42,10 +42,13 @@ if __name__ == "__main__":
     cam_intrinsics[2] -= 1
     cam_intrinsics[3] -= 1
 
-    for idx, item in tqdm(enumerate(tracking_params["frames"])):
+    for idx, item in tqdm(enumerate(tracking_params["frames"]), total=len(tracking_params["frames"])):
         name = str(idx+1)
         image = imread(f"{image_path}/{name}.png") # (H, W, 3)
         image = torch.tensor(image / 255, dtype=torch.float)
+        # resize image
+        if image.shape[0] != size or image.shape[1] != size:
+            image = torch.nn.functional.interpolate(image.permute(2, 0, 1).unsqueeze(0), size=(size, size), mode="bilinear", align_corners=False).squeeze(0).permute(1, 2, 0)
 
         pose_params = torch.tensor(item["pose"], dtype=torch.float, device=device).unsqueeze(0)
         expr_params = torch.tensor(item["expression"], dtype=torch.float, device=device).unsqueeze(0)
