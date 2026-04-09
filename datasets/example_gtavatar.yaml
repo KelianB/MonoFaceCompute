@@ -1,0 +1,20 @@
+# Root directory of the dataset. mp4 file should be here.
+base_dir: /bulk/data/face_raw/Example
+output_dir: /bulk/data/face_processed/Example
+
+tracker: EMOCA
+shape_tracker: SMIRK
+crop_mode: constant
+crop_scale: 1.4
+resize: 512
+sequences:
+    1:
+        source: video.mp4 # relative to base_dir
+shape_sequence: 1
+
+normals_estimator: sapiens
+normals_subsample: 4
+albedo_estimator: intrinsic_anything
+albedo_subsample: 4
+
+steps: ["extract", "crop", "matte", "segment", "normals", "albedo", "landmarks", "track", "optimize", "visualize"]

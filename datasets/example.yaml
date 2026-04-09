@@ -1,6 +1,7 @@
-
+# Root directory of the dataset. mp4 files should be here.
 base_dir: /bulk/data/face_raw/Example
 output_dir: /bulk/data/face_processed/Example
+
 tracker: EMOCA
 shape_tracker: SMIRK
 crop_mode: constant
@@ -19,6 +20,6 @@ sequences:
         source: 5.mp4
     6:
         source: 6.mp4
-
 shape_sequence: 1
+
 steps: ["extract", "crop", "matte", "segment", "landmarks", "track", "optimize", "visualize"]
