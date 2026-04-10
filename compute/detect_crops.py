@@ -13,8 +13,9 @@ from inferno.datasets.ImageTestDataset import TestDataCustom
 
 from utils import gaussian_kernel, apply_featurewise_conv1d
 
-CROP_MODES = ["smooth", "constant", "fixed"]
+CROP_MODES = ["none", "smooth", "constant", "fixed"]
 """
+- none: keep the whole image
 - smooth: detect faces and smooth the detections
 - constant: detect faces and automatically compute a constant crop using the extrema of all detections within the video
 - fixed: manually pass a constant crop box
@@ -162,7 +163,9 @@ if __name__ == "__main__":
     valid_ids = torch.arange(dataset_size, dtype=torch.int)
 
     # Do a first pass to detect face bounding boxes
-    if mode == "fixed":
+    if mode == "none":
+        raw_boxes = torch.tensor([[0, 0, W, H]] * dataset_size, dtype=torch.float)
+    elif mode == "fixed":
         if not args.fixed_box:
             raise ValueError(f"Please specify --fixed_box to use with crop mode '{mode}'")
         if len(args.fixed_box) != 3:
@@ -173,7 +176,7 @@ if __name__ == "__main__":
         print("Running initial bbox detection")
         raw_boxes, valid_ids = detect_faces(dataloader, args.face_selection_strategy)
 
-    if mode == "fixed":
+    if mode in ["none", "fixed"]:
         pass
     elif mode == "constant":
         # Compute a constant crop
@@ -190,7 +193,7 @@ if __name__ == "__main__":
 
     print("Formatting boxes")
     # Make the boxes squares, scale them and clamp within image dimensions
-    crop_boxes = boxes_to_crops(raw_boxes, (H,W), args.scale)
+    crop_boxes = boxes_to_crops(raw_boxes, (H,W), args.scale if mode != "none" else 1.0)
 
     # Re-create the data loader, skipping invalid frames
     subset = Subset(dataset, valid_ids)
